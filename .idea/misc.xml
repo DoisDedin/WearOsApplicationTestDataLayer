@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/usemobile/WearOsApplicationTestDataLayer/wear/src/main/res/layout/activity_main.xml" value="1.420704845814978" />
+        <entry key="..\:/Users/usemobile/WearOsApplicationTestDataLayer/mobile/src/main/res/layout/activity_main.xml" value="0.31875" />
+        <entry key="..\:/Users/usemobile/WearOsApplicationTestDataLayer/wear/src/main/res/layout/activity_main.xml" value="0.8803680981595092" />
+        <entry key="..\:/Users/usemobile/WearOsApplicationTestDataLayer/wear/src/main/res/layout/activity_main_waer.xml" value="0.8061674008810573" />
       </map>
     </option>
   </component>
