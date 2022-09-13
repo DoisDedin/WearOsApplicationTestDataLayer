@@ -9,6 +9,8 @@ import com.example.wearosapplicationtestdatalayer.databinding.ActivityMainBindin
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
@@ -22,7 +24,6 @@ class MainActivity : ComponentActivity() {
     private val messageClient by lazy { Wearable.getMessageClient(this) }
     private val capabilityClient by lazy { Wearable.getCapabilityClient(this) }
     private val nodeClient by lazy { Wearable.getNodeClient(this) }
-
 
     private val countClicks: Int = 0
 
@@ -65,7 +66,23 @@ class MainActivity : ComponentActivity() {
 
         binding.buttonStartwearactivity.setOnClickListener {
             runBlocking {
+                try {
+                    val nodes = nodeClient.connectedNodes.await()
 
+                    // Send a message to all nodes in parallel
+                    nodes.map { node ->
+                        async {
+                            messageClient.sendMessage(node.id, START_ACTIVITY_PATH, byteArrayOf())
+                                .await()
+                        }
+                    }.awaitAll()
+
+                    Log.d(TAG, "Starting activity requests sent successfully")
+                } catch (cancellationException: CancellationException) {
+                    throw cancellationException
+                } catch (exception: Exception) {
+                    Log.d(TAG, "Starting activity failed: $exception")
+                }
             }
         }
     }
@@ -93,6 +110,7 @@ class MainActivity : ComponentActivity() {
         private const val DATA_ITEM_RECEIVED_PATH = "/data-item-received"
         const val COUNT_CLICKS_PATH = "/count_clicks"
         private const val COUNT_KEY = "count_clicks"
+        private const val START_ACTIVITY_PATH = "/start-activity"
     }
 
 
