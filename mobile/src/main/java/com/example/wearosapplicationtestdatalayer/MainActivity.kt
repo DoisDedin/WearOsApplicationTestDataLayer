@@ -1,7 +1,5 @@
 package com.example.wearosapplicationtestdatalayer
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -34,17 +32,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        //activity creates the instance of MapViewModel
         clientDataViewModel = ViewModelProvider(this).get(ClientDataViewModel::class.java)
         setListeners()
-       // setUpObserves()
     }
 
     override fun onResume() {
         super.onResume()
         dataClient.addListener(clientDataViewModel)
-        messageClient.addListener(clientDataViewModel)
         capabilityClient.addListener(
             clientDataViewModel,
             Uri.parse("wear://"),
@@ -55,74 +49,60 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         dataClient.removeListener(clientDataViewModel)
-        messageClient.removeListener(clientDataViewModel)
         capabilityClient.removeListener(clientDataViewModel)
     }
 
     private fun setListeners() {
         binding.buttonSendvalues.setOnClickListener {
-            runBlocking {
-                sendValues()
-            }
+            sendValues()
         }
 
         binding.buttonStartwearactivity.setOnClickListener {
-            runBlocking {
-                try {
-                    val nodes = nodeClient.connectedNodes.await()
-
-                    // Send a message to all nodes in parallel
-                    nodes.map { node ->
-                        async {
-                            messageClient.sendMessage(
-                                node.id,
-                                START_ACTIVITY_IN_WEAR,
-                                byteArrayOf()
-                            )
-                                .await()
-                        }
-                    }.awaitAll()
-
-                    Log.d(TAG, "Starting activity requests sent successfully")
-                } catch (cancellationException: CancellationException) {
-                    throw cancellationException
-                } catch (exception: Exception) {
-                    Log.d(TAG, "Starting activity failed: $exception")
-                }
-            }
+            startWearActivity()
         }
     }
 
-    private fun setUpObserves() {
-        clientDataViewModel.startIntent.observe(this) {
-            val appIntent =
-                Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:o5zbLCjoc2Q"))
-            val webIntent = Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("http://www.youtube.com/watch?v=o5zbLCjoc2Q")
-            )
+    private fun sendValues() {
+        runBlocking {
             try {
-                this.startActivity(appIntent)
-            } catch (ex: ActivityNotFoundException) {
-                this.startActivity(webIntent)
+                val request = PutDataMapRequest.create(COUNT_CLICKS_PATH).apply {
+                    dataMap.putInt(COUNT_KEY, countClicks)
+                }.asPutDataRequest().setUrgent()
+
+                val result = dataClient.putDataItem(request).await()
+
+                Log.d(TAG, "DataItem saved: $result")
+            } catch (cancellationException: CancellationException) {
+                throw cancellationException
+            } catch (exception: Exception) {
+                Log.d(TAG, "Saving DataItem failed: $exception")
             }
         }
-
     }
 
-    private suspend fun sendValues() {
-        try {
-            val request = PutDataMapRequest.create(COUNT_CLICKS_PATH).apply {
-                dataMap.putInt(COUNT_KEY, countClicks)
-            }.asPutDataRequest().setUrgent()
+    private fun startWearActivity() {
+        runBlocking {
+            try {
+                val nodes = nodeClient.connectedNodes.await()
 
-            val result = dataClient.putDataItem(request).await()
+                // Send a message to all nodes in parallel
+                nodes.map { node ->
+                    async {
+                        messageClient.sendMessage(
+                            node.id,
+                            START_ACTIVITY_IN_WEAR,
+                            byteArrayOf()
+                        )
+                            .await()
+                    }
+                }.awaitAll()
 
-            Log.d(TAG, "DataItem saved: $result")
-        } catch (cancellationException: CancellationException) {
-            throw cancellationException
-        } catch (exception: Exception) {
-            Log.d(TAG, "Saving DataItem failed: $exception")
+                Log.d(TAG, "Starting activity requests sent successfully")
+            } catch (cancellationException: CancellationException) {
+                throw cancellationException
+            } catch (exception: Exception) {
+                Log.d(TAG, "Starting activity failed: $exception")
+            }
         }
     }
 
