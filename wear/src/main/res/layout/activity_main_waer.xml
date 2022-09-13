@@ -14,7 +14,6 @@
         android:text="joao vitor cotta"
         android:textColor="#000000" />
 
-
     <TextView
         android:id="@+id/textview_alturauser"
         android:layout_width="wrap_content"
@@ -24,13 +23,19 @@
         android:text="180cm"
         android:textColor="#000000" />
 
+    <Button
+        android:id="@+id/button_start_activity_in_cell"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="start_activity_in_cell"
+        android:textColor="#ffff" />
 
     <TextView
         android:id="@+id/textview_numeroclicks"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp"
         android:text="7 vezes"
         android:textColor="#000000" />
 
@@ -41,5 +46,6 @@
         android:layout_gravity="center"
         android:text="button clics ++"
         android:textColor="#000000" />
+
 
 </LinearLayout>

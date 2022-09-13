@@ -2,7 +2,6 @@ package com.example.wearosapplicationtestdatalayer
 
 import android.net.Uri
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -13,6 +12,8 @@ import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -25,6 +26,7 @@ class MainActivityWear : ComponentActivity() {
     private val dataClient by lazy { Wearable.getDataClient(this) }
     private val messageClient by lazy { Wearable.getMessageClient(this) }
     private val capabilityClient by lazy { Wearable.getCapabilityClient(this) }
+    private val nodeClient by lazy { Wearable.getNodeClient(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,51 +72,38 @@ class MainActivityWear : ComponentActivity() {
 
     private fun setListeners() {
         binding.buttonAddClicks.setOnClickListener {
+            //  sendClickTomMobile()
+        }
+        binding.buttonStartActivityInCell.setOnClickListener {
             sendClickTomMobile()
         }
     }
 
 
     private fun sendClickTomMobile() {
+
         lifecycleScope.launch {
             try {
-                val nodes = getCapabilitiesForReachableNodes()
-                    .filterValues { "mobile" in it && "camera" in it }.keys
-                displayNodes(nodes)
+                val nodes = nodeClient.connectedNodes.await()
+                // Send a message to all nodes in parallel
+                nodes.map { node ->
+                    async {
+                        messageClient.sendMessage(node.id, START_ACTIVITY_IN_CELL, byteArrayOf())
+                            .await()
+                    }
+                }.awaitAll()
+                Log.d(TAG, "Starting activity in cell requests sent successfully")
             } catch (cancellationException: CancellationException) {
-                throw cancellationException
+                Log.d(TAG, "Starting activity in cellfailed: $cancellationException")
             } catch (exception: Exception) {
-                Log.d(TAG, "Querying nodes failed: $exception")
+                Log.d(TAG, "Starting activity in cellfailed: $exception")
             }
         }
     }
 
-    private suspend fun getCapabilitiesForReachableNodes(): Map<Node, Set<String>> =
-        capabilityClient.getAllCapabilities(CapabilityClient.FILTER_REACHABLE)
-            .await()
-            // Pair the list of all reachable nodes with their capabilities
-            .flatMap { (capability, capabilityInfo) ->
-                capabilityInfo.nodes.map { it to capability }
-            }
-            // Group the pairs by the nodes
-            .groupBy(
-                keySelector = { it.first },
-                valueTransform = { it.second }
-            )
-            // Transform the capability list for each node into a set
-            .mapValues { it.value.toSet() }
-
-
-    private fun displayNodes(nodes: Set<Node>) {
-        val message = if (nodes.isEmpty()) {
-            getString(R.string.no_device)
-        } else {
-            getString(R.string.connected_nodes, nodes.joinToString(", ") { it.displayName })
-        }
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
 
     companion object {
+        private const val START_ACTIVITY_IN_CELL = "start_activity_in_cell"
         private const val TAG = "MainActivityWear"
     }
 

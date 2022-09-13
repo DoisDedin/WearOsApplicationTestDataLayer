@@ -1,5 +1,7 @@
 package com.example.wearosapplicationtestdatalayer
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,7 +18,6 @@ import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
 
 class MainActivity : ComponentActivity() {
-
 
     private lateinit var binding: ActivityMainBinding
 
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
         //activity creates the instance of MapViewModel
         clientDataViewModel = ViewModelProvider(this).get(ClientDataViewModel::class.java)
         setListeners()
+        setUpObserves()
     }
 
     override fun onResume() {
@@ -72,7 +74,11 @@ class MainActivity : ComponentActivity() {
                     // Send a message to all nodes in parallel
                     nodes.map { node ->
                         async {
-                            messageClient.sendMessage(node.id, START_ACTIVITY_PATH, byteArrayOf())
+                            messageClient.sendMessage(
+                                node.id,
+                                START_ACTIVITY_IN_WEAR,
+                                byteArrayOf()
+                            )
                                 .await()
                         }
                     }.awaitAll()
@@ -87,6 +93,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun setUpObserves() {
+        clientDataViewModel.startIntent.observe(this) {
+            val appIntent =
+                Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:o5zbLCjoc2Q"))
+            val webIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=o5zbLCjoc2Q")
+            )
+            try {
+                this.startActivity(appIntent)
+            } catch (ex: ActivityNotFoundException) {
+                this.startActivity(webIntent)
+            }
+        }
+
+    }
 
     private suspend fun sendValues() {
         try {
@@ -104,13 +126,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     companion object {
         private const val TAG = "DataLayerService"
         private const val DATA_ITEM_RECEIVED_PATH = "/data-item-received"
         const val COUNT_CLICKS_PATH = "/count_clicks"
         private const val COUNT_KEY = "count_clicks"
-        private const val START_ACTIVITY_PATH = "/start-activity"
+        private const val START_ACTIVITY_IN_WEAR = "/start-activity-in-wear"
     }
 
 

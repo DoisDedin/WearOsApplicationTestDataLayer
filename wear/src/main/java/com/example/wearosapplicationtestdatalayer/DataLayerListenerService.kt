@@ -45,7 +45,7 @@ class DataLayerListenerService : WearableListenerService() {
     override fun onMessageReceived(messageEvent: MessageEvent) {
         super.onMessageReceived(messageEvent)
         when (messageEvent.path) {
-            START_ACTIVITY_PATH -> {
+            START_ACTIVITY_IN_WEAR -> {
                 startActivity(
                     Intent(this, MainActivityWear::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -59,6 +59,6 @@ class DataLayerListenerService : WearableListenerService() {
         private const val TAG = "DataLayerService"
         private const val DATA_ITEM_RECEIVED_PATH = "/data-item-received"
         const val COUNT_CLICKS_PATH = "/count_clicks"
-        private const val START_ACTIVITY_PATH = "/start-activity"
+        private const val START_ACTIVITY_IN_WEAR = "/start-activity-in-wear"
     }
 }
