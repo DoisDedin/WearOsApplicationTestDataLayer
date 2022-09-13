@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
         //activity creates the instance of MapViewModel
         clientDataViewModel = ViewModelProvider(this).get(ClientDataViewModel::class.java)
         setListeners()
-        setUpObserves()
+       // setUpObserves()
     }
 
     override fun onResume() {

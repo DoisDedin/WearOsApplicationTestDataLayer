@@ -3,13 +3,11 @@ package com.example.wearosapplicationtestdatalayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.wearosapplicationtestdatalayer.databinding.ActivityMainWaerBinding
 import com.google.android.gms.wearable.CapabilityClient
-import com.google.android.gms.wearable.Node
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -81,7 +79,6 @@ class MainActivityWear : ComponentActivity() {
 
 
     private fun sendClickTomMobile() {
-
         lifecycleScope.launch {
             try {
                 val nodes = nodeClient.connectedNodes.await()

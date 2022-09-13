@@ -28,13 +28,13 @@ class ClientDataViewModel : ViewModel(),
         }
     }
 
-    override fun onMessageReceived(messageEvent: MessageEvent) {
-        when (messageEvent.path) {
-            START_ACTIVITY_IN_CELL -> {
-                startIntent.value = true
-            }
-        }
-    }
+//    override fun onMessageReceived(messageEvent: MessageEvent) {
+//        when (messageEvent.path) {
+//            START_ACTIVITY_IN_CELL -> {
+//                startIntent.value = true
+//            }
+//        }
+//    }
 
     override fun onCapabilityChanged(p0: CapabilityInfo) {
         //metodo responsavel por escutar se o relogio esta conectado no celular ou não
@@ -42,6 +42,10 @@ class ClientDataViewModel : ViewModel(),
 
     companion object {
         private const val START_ACTIVITY_IN_CELL = "start_activity_in_cell"
+    }
+
+    override fun onMessageReceived(p0: MessageEvent) {
+        // TODO("Not yet implemented")
     }
 
 }
