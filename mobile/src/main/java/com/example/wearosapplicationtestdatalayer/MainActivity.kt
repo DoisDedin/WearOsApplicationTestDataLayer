@@ -4,10 +4,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.example.wearosapplicationtestdatalayer.databinding.ActivityMainBinding
 import com.google.android.gms.wearable.CapabilityClient
-import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
 
     private val countClicks: Int = 0
 
+
     private lateinit var clientDataViewModel: ClientDataViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +34,9 @@ class MainActivity : ComponentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         clientDataViewModel = ViewModelProvider(this).get(ClientDataViewModel::class.java)
+        clientDataViewModel.startDataClient(this)
         setListeners()
+        setUpObserves()
     }
 
     override fun onResume() {
@@ -56,27 +59,29 @@ class MainActivity : ComponentActivity() {
         binding.buttonSendvalues.setOnClickListener {
             sendValues()
         }
-
         binding.buttonStartwearactivity.setOnClickListener {
             startWearActivity()
         }
     }
 
-    private fun sendValues() {
-        runBlocking {
-            try {
-                val request = PutDataMapRequest.create(COUNT_CLICKS_PATH).apply {
-                    dataMap.putInt(COUNT_KEY, countClicks)
-                }.asPutDataRequest().setUrgent()
-
-                val result = dataClient.putDataItem(request).await()
-
-                Log.d(TAG, "DataItem saved: $result")
-            } catch (cancellationException: CancellationException) {
-                throw cancellationException
-            } catch (exception: Exception) {
-                Log.d(TAG, "Saving DataItem failed: $exception")
+    private fun setUpObserves() {
+        clientDataViewModel.capabilityNodes.observe(this) {
+            it.let {
+                binding.apply {
+                    buttonSendvalues.isVisible = it
+                    buttonStartwearactivity.isVisible = it
+                }
             }
+        }
+    }
+
+    private fun sendValues() {
+        binding.apply {
+            clientDataViewModel.sendInfoToWear(
+                textviewNameuser.text.toString(),
+                textviewClickcount.text.toString(),
+                textviewUserhigher.text.toString()
+            )
         }
     }
 
@@ -108,9 +113,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "DataLayerService"
-        private const val DATA_ITEM_RECEIVED_PATH = "/data-item-received"
-        const val COUNT_CLICKS_PATH = "/count_clicks"
-        private const val COUNT_KEY = "count_clicks"
         private const val START_ACTIVITY_IN_WEAR = "/start-activity-in-wear"
     }
 

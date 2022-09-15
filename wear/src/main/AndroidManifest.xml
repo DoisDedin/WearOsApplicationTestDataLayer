@@ -39,7 +39,7 @@
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <data
                     android:host="*"
-                    android:pathPrefix="/count"
+                    android:pathPrefix="/user_info_path"
                     android:scheme="wear" />
             </intent-filter>
             <intent-filter>
