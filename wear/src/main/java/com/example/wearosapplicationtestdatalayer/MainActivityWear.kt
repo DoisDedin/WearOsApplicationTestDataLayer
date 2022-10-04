@@ -32,6 +32,7 @@ class MainActivityWear : ComponentActivity() {
         setContentView(binding.root)
         observerDataChanged()
         setListeners()
+        startDataClient()
     }
 
     override fun onResume() {
@@ -52,10 +53,13 @@ class MainActivityWear : ComponentActivity() {
         capabilityClient.removeListener(clientDataViewModelWear)
     }
 
+    private fun startDataClient() {
+        clientDataViewModelWear.startDataClient(this)
+    }
 
     private fun observerDataChanged() {
-        clientDataViewModelWear.userClicksLiveData.observe(this) {
-            binding.textviewNumeroclicks.text = it.orEmpty()
+        clientDataViewModelWear.userWeightLiveData.observe(this) {
+            binding.textviewWeight.text = it.orEmpty()
         }
 
         clientDataViewModelWear.userNameLiveData.observe(this) {
@@ -65,18 +69,26 @@ class MainActivityWear : ComponentActivity() {
         clientDataViewModelWear.userHigherLiveData.observe(this) {
             binding.textviewAlturauser.text = it.orEmpty()
         }
+
+        clientDataViewModelWear.userClicksNumbers.observe(this) {
+            binding.textviewNumberClicks.text = "Clicks : $it"
+            clientDataViewModelWear.sendNumberClicksToCell(binding.textviewNumberClicks.text.toString())
+        }
     }
 
 
     private fun setListeners() {
         binding.buttonAddClicks.setOnClickListener {
-            //  sendClickTomMobile()
+            sendClickAddMobile()
         }
         binding.buttonStartActivityInCell.setOnClickListener {
             sendClickTomMobile()
         }
     }
 
+    private fun sendClickAddMobile() {
+        clientDataViewModelWear.addOneClick()
+    }
 
     private fun sendClickTomMobile() {
         lifecycleScope.launch {

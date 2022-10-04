@@ -17,10 +17,13 @@ class ClientDataViewModel() : ViewModel(),
 
     var userNameLiveData = MutableLiveData<String>()
     var userHigherLiveData = MutableLiveData<String>()
-    var userClicksLiveData = MutableLiveData<String>()
+    private var _userClicksLiveData = MutableLiveData<String>()
+    val userClicksLiveData : LiveData<String>
+        get() = _userClicksLiveData
 
     private lateinit var dataClient: DataClient
-    //by lazy {  }
+
+    var userNumberClicksLiveData = MutableLiveData<String>()
 
     fun startDataClient(context: Context) {
         dataClient = Wearable.getDataClient(context)
@@ -31,12 +34,17 @@ class ClientDataViewModel() : ViewModel(),
         get() = _capabilityNodes
 
     override fun onDataChanged(dataInfo: DataEventBuffer) {
-        dataInfo.map {
-            when (it.type) {
-                1 -> {} //fazer algo com o nome do usuario
-                2 -> {}//fazer algo com a altura do usaurio
-                3 -> {}// fazer algo com o numero de cliks do usuario
-                else -> {}//fazer nada
+        dataInfo.map { event ->
+            when (event.dataItem.uri.path) {
+                NUMBER_CLICKS_INFO_PATH -> {
+                    event.dataItem.also { item ->
+                        DataMapItem.fromDataItem(item).dataMap.apply {
+                            val clicks = getString(NUMBER_CLICKS_INFO_KEY, "-")
+                            _userClicksLiveData.postValue(clicks)
+                        }
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -47,6 +55,8 @@ class ClientDataViewModel() : ViewModel(),
     }
 
     companion object {
+        private const val NUMBER_CLICKS_INFO_PATH = "/number_clicks_info_path"
+        private const val NUMBER_CLICKS_INFO_KEY = "number_clicks_info_key"
         private const val START_ACTIVITY_IN_CELL = "start_activity_in_cell"
         private const val USER_INFO_PATH = "/user_info_path"
         private const val NAME_USER_INFO_KEY = "user_info_name_key"
@@ -77,6 +87,5 @@ class ClientDataViewModel() : ViewModel(),
                 Log.d(TAG, "Saving DataItem failed: $exception")
             }
         }
-
     }
 }

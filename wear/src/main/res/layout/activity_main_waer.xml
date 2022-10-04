@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="4dp"
         android:text="180cm"
         android:textColor="#000000" />
 
@@ -32,11 +32,20 @@
         android:textColor="#ffff" />
 
     <TextView
-        android:id="@+id/textview_numeroclicks"
+        android:id="@+id/textview_weight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="7 vezes"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/textview_number_clicks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:text="Clicks: 0"
         android:textColor="#000000" />
 
     <Button

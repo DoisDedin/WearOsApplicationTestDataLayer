@@ -24,8 +24,6 @@ class MainActivity : ComponentActivity() {
     private val capabilityClient by lazy { Wearable.getCapabilityClient(this) }
     private val nodeClient by lazy { Wearable.getNodeClient(this) }
 
-    private val countClicks: Int = 0
-
 
     private lateinit var clientDataViewModel: ClientDataViewModel
 
@@ -71,6 +69,12 @@ class MainActivity : ComponentActivity() {
                     buttonSendvalues.isVisible = it
                     buttonStartwearactivity.isVisible = it
                 }
+            }
+        }
+
+        clientDataViewModel.userClicksLiveData.observe(this) {
+            it.let {
+                binding.textviewClickWear.text = it
             }
         }
     }
